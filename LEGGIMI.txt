@@ -1,0 +1,39 @@
+DISTINTA TRASFERTE - APK PER ANDROID (uso personale, non pubblicato)
+=====================================================================
+
+Questa cartella è un progetto Android completo: contiene l'app (in app/src/main/assets/www/index.html),
+il guscio nativo (MainActivity.java), le icone e una chiave di firma personale (distinta.jks).
+Da qui si ottiene un file APK da copiare e installare sul telefono, senza Play Store.
+
+Cosa fa in più rispetto alla versione web
+  - "Scatta una foto" apre direttamente la fotocamera del telefono, "Scegli dalla galleria" apre la galleria.
+  - PDF, Excel, CSV e backup vengono salvati nella cartella Download e aperti.
+  - Il tasto indietro chiude i fogli o torna all'elenco dei viaggi.
+  - I dati restano solo sul telefono (fai ogni tanto un backup dalle Impostazioni: se disinstalli l'app si perdono).
+  - La lettura degli scontrini usa la tua chiave API di Anthropic (Impostazioni, ingranaggio): serve internet.
+
+STRADA A - Android Studio (sul computer)
+  1. Installa Android Studio (gratuito) e apri questa cartella: File > Open.
+  2. Attendi la sincronizzazione di Gradle (la prima volta scarica i componenti).
+  3. Menu Build > Build App Bundle(s) / APK(s) > Build APK(s).
+  4. Il file è in app/build/outputs/apk/debug/app-debug.apk
+
+STRADA B - senza installare nulla (GitHub, deposito PRIVATO)
+  1. Crea un account su github.com e un nuovo deposito PRIVATO (Private).
+  2. Trascina nel deposito il contenuto di questa cartella, compresa la cartella nascosta .github
+     (su Mac mostra i file nascosti con Cmd+Maiusc+punto; su Windows è già visibile).
+  3. Scheda Actions > "Crea APK" > Run workflow. Dopo 3-5 minuti scarica l'artefatto "distinta-trasferte-apk".
+  4. Decomprimi: dentro c'è app-release.apk.
+
+Installazione sul telefono
+  1. Copia l'APK sul telefono (cavo, Drive, email a te stesso).
+  2. Aprilo da "File": Android chiede di consentire l'installazione da questa fonte: accetta solo per quell'app.
+  3. Se compare l'avviso di Play Protect ("app non verificata") scegli "Installa comunque": è normale per un'app non pubblicata.
+
+Aggiornare l'app
+  Costruisci un nuovo APK e installalo sopra il vecchio: la firma è sempre la stessa, quindi i dati restano.
+  Prima di cambiare versione fai comunque un backup dalle Impostazioni.
+
+Nota sulla firma
+  distinta.jks e la sua password sono scritte in app/build.gradle. Vanno bene per uso personale.
+  Se un giorno vuoi pubblicare l'app, crea una chiave nuova e tienila privata.
