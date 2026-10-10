@@ -281,8 +281,8 @@ input,select,textarea{ font:inherit; color:inherit; }
 
 /* ---------- Fogli ---------- */
 .scrim{ position:fixed; inset:0; z-index:20; background:rgb(var(--scrim) / .4); }
-.sheet{ position:fixed; z-index:21; left:0; right:0; bottom:0; max-height:92%; overflow:auto; background:var(--surface); border-radius:28px 28px 0 0; padding:10px 18px calc(20px + env(safe-area-inset-bottom,0px)); transform:translateY(24px); opacity:0; transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .2s ease; margin:0 auto; max-width:600px; box-shadow:0 -8px 40px rgb(var(--shadow-color) / .22); }
-.sheet::before{ content:''; display:block; width:38px; height:5px; border-radius:3px; background:var(--line-strong); margin:0 auto 14px; }
+.sheet{ position:fixed; z-index:21; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom,0px)); max-height:calc(100% - 40px - env(safe-area-inset-bottom,0px)); overflow:auto; background:var(--surface); border-radius:28px; padding:22px 18px 20px; transform:translateY(16px) scale(.97); opacity:0; transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .2s ease; margin:0 auto; max-width:560px; box-shadow:0 18px 60px rgb(var(--shadow-color) / .35), 0 0 0 1px var(--line); }
+.sheet::before{ display:none; }
 .sheet.in{ transform:none; opacity:1; }
 .sheet h2{ font:700 24px/1.2 var(--font-display); letter-spacing:.2px; }
 .sheet .grp{ margin-top:16px; }
@@ -319,7 +319,7 @@ input,select,textarea{ font:inherit; color:inherit; }
 #toast{ position:fixed; z-index:40; left:12px; right:12px; bottom:calc(84px + env(safe-area-inset-bottom,0px)); display:flex; justify-content:center; pointer-events:none; }
 #toast .t{ pointer-events:auto; background:var(--ink); color:var(--bg); padding:13px 18px; border-radius:16px; font-weight:500; font-size:15px; display:flex; gap:14px; align-items:center; max-width:560px; box-shadow:0 8px 28px rgb(var(--shadow-color) / .3); }
 #toast button{ background:transparent; border:0; color:inherit; font-weight:700; min-height:36px; padding:0 4px; }
-@media (min-width:720px){ .sheet{ bottom:24px; border-radius:28px; } }
+@media (min-width:720px){ .sheet{ bottom:auto; top:50%; max-height:calc(100% - 80px); transform:translateY(-47%) scale(.97); } .sheet.in{ transform:translateY(-50%); } }
 @media (prefers-reduced-motion:reduce){ .sheet{ transition:none; } #scanBar .sp{ animation-duration:2.4s; } }
 .panel .btn.quiet{ justify-content:flex-start; text-align:left; padding:0; min-height:40px; font-weight:600; }
 .panel .btn.quiet .dot{ margin-right:8px; }
@@ -473,7 +473,7 @@ function buildDistinta(trips, exps){
     const list = exps.filter(e => e.tripId === t.id).sort(sortExp);
     all.push.apply(all, list);
     m.head.push({ n:i+1, ini:splitDT(t.inizio,t.oraIn), fin:splitDT(t.fine,t.oraFin) });
-    notes.push('T' + (i+1) + ': ' + t.nome + ', ' + t.dest + (t.annot && t.annot.trim() ? ' - ' + t.annot.trim().replace(/\s+/g,' ') : ''));
+    if(t.annot && t.annot.trim()) notes.push(t.annot.trim().replace(/\s+/g, ' '));   // nelle annotazioni compare solo il testo scritto alla creazione del viaggio
     const arr = t.arrivo || t.inizio, isDest = l => norm(l) === norm(t.dest);   // arrivo scelto alla creazione del viaggio: vale per la riga della destinazione
     const tr = [];
     for(const e of list){
@@ -1117,7 +1117,9 @@ function scanErr(e){
     case 'bad_key': return 'La chiave API non è valida o non ha i permessi' + (e.message ? ' (' + e.message + ')' : '') + '. Controllala nelle impostazioni.';
     case 'network': return 'Impossibile raggiungere Anthropic: controlla la connessione' + (e.message ? ' (' + String(e.message).slice(0,80) + ')' : '') + '.';
     case 'bad_model': return 'Il modello non è disponibile con questa chiave. Svuota il campo Modello nelle impostazioni.';
-    case 'api_error': return 'Anthropic ha rifiutato la richiesta' + (e.status ? ' (' + e.status + ')' : '') + (e.message ? ': ' + String(e.message).slice(0,200) : '') + '.';
+    case 'api_error':
+      if(/credit balance|billing|credit/i.test(e.message || '')) return 'Il credito del tuo account Anthropic è esaurito o non attivo (errore ' + (e.status || 400) + '). Aggiungi credito su console.anthropic.com, in Plans & Billing, poi riprova.';
+      return 'Anthropic ha rifiutato la richiesta' + (e.status ? ' (' + e.status + ')' : '') + (e.message ? ': ' + String(e.message).slice(0,200) : '') + '.';
     case 'cancelled': return '';
     case 'not_granted': return 'Non hai consentito a questa pagina di usare Claude. Ricarica la pagina e accetta la richiesta quando compare.';
     case 'sampling_disabled': case 'not_declared': case 'capability_disabled': case 'capability_removed': return 'La lettura con Claude non è attiva per questo account o in questa visualizzazione (' + c + ').';
@@ -1134,7 +1136,7 @@ function scanErr(e){
 function scanWhy(){
   if(!caps.ready) return '';
   if(caps.sample && caps.images) return '';
-  return 'Per leggere gli scontrini con la foto serve la chiave API di Anthropic: inseriscila nelle impostazioni (ingranaggio nella schermata iniziale). In alternativa usa “Incolla i dati letti da Claude”.';
+  return 'Per leggere gli scontrini serve una chiave: gratuita con Google Gemini oppure a pagamento con Claude. Inseriscila nelle impostazioni (ingranaggio in alto). In alternativa usa “Incolla i dati letti da Claude”.';
 }
 /* ---------- Motore di lettura con chiave API Anthropic (l'app installata non ha il collegamento con Claude) ---------- */
 const API_IMG_TYPES = ['image/jpeg','image/png','image/webp','image/gif'];
@@ -1168,28 +1170,112 @@ async function apiAsk(content, maxTokens, signal){
   throw last;
 }
 async function apiSample(){ throw { code:'unavailable' }; }
-apiSample.json = async function(prompt, o){
-  const blob = o.images, b64 = (await readDataURL(blob)).split(',')[1];
-  const data = await apiAsk([{ type:'image', source:{ type:'base64', media_type:blob.type || 'image/jpeg', data:b64 } }, { type:'text', text:prompt + ' Rispondi solo con l’oggetto JSON, senza testo aggiuntivo e senza backtick.' }], 1000, o.signal);
+apiSample.json = async function(prompt, o){ return engineOf() === 'gemini' ? geminiJson(prompt, o) : anthropicJson(prompt, o); };
+async function anthropicJson(prompt, o){
+  const blob = o.images;
+  const ask = async bl => {
+    const b64 = (await readDataURL(bl)).split(',')[1];
+    return apiAsk([{ type:'image', source:{ type:'base64', media_type:bl.type || 'image/jpeg', data:b64 } }, { type:'text', text:prompt + ' Rispondi solo con l’oggetto JSON, senza testo aggiuntivo e senza backtick.' }], 1000, o.signal);
+  };
+  let data;
+  try{ data = await ask(blob); }
+  catch(e){
+    if(!(e && e.code === 'api_error' && e.status === 400 && /image|base64|media|size|large/i.test(e.message || ''))) throw e;
+    data = await ask(await prepImage(blob, 1100));   // immagine rifiutata: riprova più piccola e ricodificata in JPEG
+  }
   const txt = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
   const r = parseLooseJSON(txt);
   if(!r) throw { code:'invalid_json', text:txt };
   return r;
-};
+}
+/* ---------- Gemini (Google AI Studio, piano gratuito) ---------- */
+const GEMINI_MODELS = ['gemini-2.5-flash','gemini-2.0-flash','gemini-flash-latest'];
+let geminiModelOk = '';
+function engineOf(){
+  if(S.settings.engine === 'gemini' || S.settings.engine === 'anthropic') return S.settings.engine;
+  return (S.settings.apiKey || '').trim() && !(S.settings.geminiKey || '').trim() ? 'anthropic' : 'gemini';
+}
+const hasKey = () => ((engineOf() === 'gemini' ? S.settings.geminiKey : S.settings.apiKey) || '').trim() !== '';
+async function geminiPost(model, body, signal){
+  const key = (S.settings.geminiKey || '').replace(/\s+/g, ''); if(!key) throw { code:'no_key' };
+  if(!/^[\x21-\x7E]+$/.test(key)) throw { code:'bad_key', message:'la chiave contiene caratteri non validi, ricopiala per intero' };
+  let res;
+  try{
+    res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', { method:'POST', signal,
+      headers:{ 'content-type':'application/json', 'x-goog-api-key':key }, body:JSON.stringify(body) });
+  }catch(e){ if(e && e.name === 'AbortError') throw { code:'cancelled' }; throw { code:'network', message:e && e.message }; }
+  if(!res.ok){
+    let msg = '', stt = ''; try{ const j = await res.json(); msg = j.error.message; stt = j.error.status || ''; }catch(e){}
+    const st = res.status, keyBad = /api key|API_KEY/i.test(msg + ' ' + stt);
+    throw { code:keyBad || st === 401 || st === 403 ? 'bad_key' : st === 429 ? 'rate_limited' : st >= 500 ? 'upstream_error' : (st === 404 || (st === 400 && /model/i.test(msg))) ? 'bad_model' : 'api_error', status:st, message:msg };
+  }
+  return res.json();
+}
+async function geminiAsk(parts, maxTokens, signal, asJson){
+  const chosen = (S.settings.geminiModel || '').trim(), list = chosen ? [chosen] : (geminiModelOk ? [geminiModelOk] : []).concat(GEMINI_MODELS.filter(m => m !== geminiModelOk));
+  const cfg = { temperature:0, maxOutputTokens:maxTokens }; if(asJson) cfg.responseMimeType = 'application/json';
+  let last;
+  for(const model of list){
+    try{ const d = await geminiPost(model, { contents:[{ role:'user', parts }], generationConfig:cfg }, signal); geminiModelOk = model; d._model = model; return d; }
+    catch(e){ last = e; if(!e || e.code !== 'bad_model') throw e; }
+  }
+  throw last;
+}
+const geminiText = d => ((d && d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) || []).map(p => p.text || '').join('');
+async function geminiJson(prompt, o){
+  const ask = async bl => {
+    const b64 = (await readDataURL(bl)).split(',')[1];
+    return geminiAsk([{ inline_data:{ mime_type:bl.type || 'image/jpeg', data:b64 } }, { text:prompt + ' Rispondi solo con l’oggetto JSON.' }], 4096, o.signal, true);
+  };
+  let d;
+  try{ d = await ask(o.images); }
+  catch(e){
+    if(!(e && e.code === 'api_error' && e.status === 400 && /image|base64|media|size|large|payload/i.test(e.message || ''))) throw e;
+    d = await ask(await prepImage(o.images, 1100));
+  }
+  const txt = geminiText(d), r = parseLooseJSON(txt);
+  if(!r) throw { code:'invalid_json', text:txt };
+  return r;
+}
+function settingsEngineHTML(){
+  const g = engineOf() === 'gemini';
+  return '<div class="grp"><span>Lettura degli scontrini</span><div class="seg" role="group" aria-label="Servizio di lettura"><button data-act="set-engine" data-v="gemini" aria-pressed="' + g + '">Gemini, gratuito</button><button data-act="set-engine" data-v="anthropic" aria-pressed="' + !g + '">Claude, a pagamento</button></div></div>' +
+    (g
+      ? '<label class="field"><span>Chiave API di Google Gemini</span><input id="s-gkey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…" value="' + esc(S.settings.geminiKey || '') + '"></label>' +
+        '<label class="field"><span>Modello (facoltativo)</span><input id="s-gmodel" type="text" autocomplete="off" autocapitalize="off" placeholder="gemini-2.5-flash" value="' + esc(S.settings.geminiModel || '') + '"></label>' +
+        '<p class="hint" style="margin-top:8px">Crea la chiave gratis su aistudio.google.com/apikey: accedi con un account Google e tocca “Create API key”. Il piano gratuito ha limiti di richieste al minuto e al giorno. Con il piano gratuito Google può usare le foto inviate per migliorare i suoi servizi: evita scontrini con dati personali.</p>'
+      : '<label class="field"><span>Chiave API di Anthropic</span><input id="s-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-…" value="' + esc(S.settings.apiKey || '') + '"></label>' +
+        '<label class="field"><span>Modello (facoltativo)</span><input id="s-model" type="text" autocomplete="off" autocapitalize="off" placeholder="claude-sonnet-5" value="' + esc(S.settings.model || '') + '"></label>' +
+        '<p class="hint" style="margin-top:8px">Serve credito sul tuo account Anthropic (console.anthropic.com, Plans &amp; Billing). Ogni foto ha un costo di pochi centesimi.</p>') +
+    '<p class="hint" style="margin-top:8px">La chiave resta solo su questo telefono e viene usata solo per inviare le foto che scansioni.</p>' +
+    '<button class="btn block" style="margin-top:10px" data-act="test-key">Prova la chiave</button><p class="hint" id="keyTest" aria-live="polite" style="margin-top:8px"></p>';
+}
+function readSettingsForm(){
+  const g = id => { const el = $(id); return el ? (el.value || '').trim() : null; };
+  const a = g('#s-key'), am = g('#s-model'), gk = g('#s-gkey'), gm = g('#s-gmodel');
+  if(a !== null) S.settings.apiKey = a; if(am !== null) S.settings.model = am;
+  if(gk !== null) S.settings.geminiKey = gk; if(gm !== null) S.settings.geminiModel = gm;
+}
+function saveSettings(){
+  readSettingsForm(); useApiEngine(); save(); closeSheet();
+  toast(hasKey() ? 'Impostazioni salvate: lettura scontrini attiva' : 'Impostazioni salvate');
+}
 /** Pulsante "Prova la chiave": verifica rete, chiave, modello e invio di un'immagine. */
 async function testApiKey(){
   const out = $('#keyTest'); if(!out) return;
-  S.settings.apiKey = ($('#s-key').value || '').trim(); S.settings.model = ($('#s-model').value || '').trim(); save();
+  readSettingsForm(); save();
   out.className = 'hint'; out.textContent = 'Prova in corso…';
   const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
   try{
-    const d = await apiAsk([{ type:'image', source:{ type:'base64', media_type:'image/png', data:PNG } }, { type:'text', text:'Rispondi solo: ok' }], 10);
-    out.className = 'hint pos'; out.textContent = 'Funziona: chiave valida, modello ' + d._model + ', immagini accettate.';
+    let model;
+    if(engineOf() === 'gemini') model = (await geminiAsk([{ inline_data:{ mime_type:'image/png', data:PNG } }, { text:'Rispondi solo: ok' }], 64, undefined, false))._model;
+    else model = (await apiAsk([{ type:'image', source:{ type:'base64', media_type:'image/png', data:PNG } }, { type:'text', text:'Rispondi solo: ok' }], 10))._model;
+    out.className = 'hint pos'; out.textContent = 'Funziona: chiave valida, modello ' + model + ', immagini accettate.';
   }catch(e){ out.className = 'hint neg'; out.textContent = scanErr(e) || 'Prova annullata.'; }
 }
 function useApiEngine(){
   if(caps.sample && !caps.viaApi) return;
-  if(S.settings.apiKey){ caps.sample = apiSample; caps.images = true; caps.imgTypes = API_IMG_TYPES; caps.viaApi = true; }
+  if(hasKey()){ caps.sample = apiSample; caps.images = true; caps.imgTypes = API_IMG_TYPES; caps.viaApi = true; }
   else if(caps.viaApi){ caps.sample = null; caps.images = false; caps.viaApi = false; }
 }
 /** Legge il file scelto come data URL con FileReader. */
@@ -1204,12 +1290,12 @@ function dataURLtoBlob(u){
   return new Blob([a], { type:m[1] || 'application/octet-stream' });
 }
 /** Foto scelta -> data URL (FileReader) -> JPEG ridimensionato da inviare al motore OCR. Il motore accetta Blob, non URL. */
-async function prepImage(file){
+async function prepImage(file, maxSide){
   const url = await readDataURL(file);
   try{
     const img = new Image();
     await new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; img.src = url; });
-    const w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, 1800 / Math.max(w, h)), c = document.createElement('canvas');
+    const w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, (maxSide || 1800) / Math.max(w, h)), c = document.createElement('canvas');
     c.width = Math.max(1, Math.round(w*k)); c.height = Math.max(1, Math.round(h*k));
     const g = c.getContext('2d'); g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--print-paper').trim() || 'white'; g.fillRect(0,0,c.width,c.height);
     g.drawImage(img, 0, 0, c.width, c.height);
@@ -1906,11 +1992,7 @@ async function openSettings(){
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   let persisted = 'non disponibile'; try{ if(navigator.storage && navigator.storage.persisted) persisted = (await navigator.storage.persisted()) ? 'sì' : 'no'; }catch(e){}
   showSheet('<h2>Impostazioni</h2>' +
-    '<div class="grp"><span>Lettura degli scontrini</span></div>' +
-    '<label class="field" style="margin-top:0"><span>Chiave API di Anthropic</span><input id="s-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-…" value="' + esc(S.settings.apiKey || '') + '"></label>' +
-    '<label class="field"><span>Modello (facoltativo)</span><input id="s-model" type="text" autocomplete="off" autocapitalize="off" placeholder="claude-sonnet-5" value="' + esc(S.settings.model || '') + '"></label>' +
-    '<p class="hint" style="margin-top:6px">La chiave resta solo su questo telefono e viene usata solo per inviare a Anthropic le foto che scansioni. Ogni foto ha un costo di pochi centesimi. Puoi crearla su console.anthropic.com.</p>' +
-    '<button class="btn block" style="margin-top:10px" data-act="test-key">Prova la chiave</button><p class="hint" id="keyTest" aria-live="polite" style="margin-top:8px"></p>' +
+    '<div id="engBlock">' + settingsEngineHTML() + '</div>' +
     '<div class="actions"><button class="btn primary" data-act="save-settings">Salva</button></div>' +
     '<div class="grp" style="margin-top:22px"><span>Installazione</span></div>' +
     (isStandalone() ? '<p class="hint">L’app è già installata su questo telefono.</p>'
@@ -1923,10 +2005,6 @@ async function openSettings(){
     '<div class="filebtn"><span class="btn">Ripristina da un backup</span><input type="file" id="restoreFile" accept="application/json,.json" aria-label="Ripristina da un backup"></div>' +
     '<p class="err" id="sheetErr" role="alert"></p>' +
     '<div class="actions"><button class="btn" data-act="close-sheet">Chiudi</button></div>', 'Impostazioni');
-}
-function saveSettings(){
-  S.settings.apiKey = ($('#s-key').value || '').trim(); S.settings.model = ($('#s-model').value || '').trim();
-  useApiEngine(); save(); closeSheet(); toast(S.settings.apiKey ? 'Impostazioni salvate: lettura scontrini attiva' : 'Impostazioni salvate');
 }
 function backupSave(){
   const d = { app:'distinta-trasferte', versione:1, esportato:new Date().toISOString(), trips:S.trips, exps:S.exps, settings:{ theme:S.settings.theme, matricola:S.settings.matricola } };
@@ -1999,6 +2077,7 @@ const ACT = {
   'open-settings': () => openSettings(),
   'save-settings': () => saveSettings(),
   'test-key': () => testApiKey(),
+  'set-engine': b => { readSettingsForm(); S.settings.engine = b.dataset.v; save(); const el = $('#engBlock'); if(el) el.innerHTML = settingsEngineHTML(); },
   'install-app': async () => { if(!installEvt) return; installEvt.prompt(); try{ await installEvt.userChoice; }catch(e){} installEvt = null; closeSheet(); },
   'backup-save': () => backupSave(),
   'paste-open': () => openPaste(),
