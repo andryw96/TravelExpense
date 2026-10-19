@@ -28,17 +28,16 @@ Uso
     salvati in un backup si perdono.
 
 Lettura degli scontrini con la foto
-  L'app installata non è collegata a Claude, quindi per leggere le foto
-  usa la tua chiave API di Anthropic:
-  1. Crea una chiave su https://console.anthropic.com (serve un account con credito).
-  2. Nell'app: ingranaggio > "Chiave API di Anthropic" > Salva.
-  La chiave resta solo sul telefono. Ogni foto costa pochi centesimi e
-  richiede internet. Senza chiave puoi inserire le spese a mano o usare
-  "Incolla i dati letti da Claude".
+  L'app installata legge le foto con Google Gemini (gratis):
+  1. Vai su https://aistudio.google.com/apikey e crea una chiave.
+  2. Nell'app: ingranaggio > "Chiave Gemini" > Salva > "Prova la chiave".
+  La chiave resta solo sul telefono e serve internet. Senza chiave puoi
+  inserire le spese a mano. Le foto vengono ridotte prima dell'invio e
+  quelle di una trasferta sono lette 3 alla volta.
 
 Aggiornare l'app
   Sostituisci i file su Netlify. Per forzare l'aggiornamento sui telefoni
-  cambia il numero in sw.js (const CACHE = 'distinta-v2').
+  cambia il numero in sw.js (const CACHE = 'distinta-v10').
 
 Provarla sul computer prima di pubblicarla
   Nella cartella: python3 -m http.server 8000   poi apri http://localhost:8000

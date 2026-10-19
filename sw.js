@@ -1,5 +1,5 @@
 /* Service worker: l'app funziona anche senza rete. Cambia CACHE per forzare l'aggiornamento dei file. */
-const CACHE = 'distinta-v9';
+const CACHE = 'distinta-v11';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
