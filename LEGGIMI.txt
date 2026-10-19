@@ -1,0 +1,43 @@
+TravelExpense - APP INSTALLABILE SUL TELEFONO
+===================================================
+
+Contenuto della cartella
+  index.html            l'app completa (un solo file)
+  manifest.webmanifest  nome, icona e modalità "a tutto schermo"
+  sw.js                 fa funzionare l'app anche senza internet
+  icons/                icone dell'app
+
+Come installarla (una volta sola)
+  Un'app installabile deve essere servita da un indirizzo https.
+  Il modo più semplice, gratuito e senza codice:
+
+  1. Sul computer apri https://app.netlify.com/drop
+  2. Trascina nella pagina l'INTERA cartella "app-trasferte" (non lo zip).
+  3. Netlify ti dà un indirizzo tipo https://nome-casuale.netlify.app
+  4. Apri quell'indirizzo sul telefono:
+       Android (Chrome): menu con i tre puntini > "Installa app"
+       iPhone (Safari):  pulsante Condividi > "Aggiungi alla schermata Home"
+  Alternative equivalenti: GitHub Pages, Cloudflare Pages, il tuo hosting.
+
+Uso
+  - Viaggi, spese, calendario, residuo pasti, torta ed esportazioni
+    (PDF RAI, riepilogo, Excel, CSV) funzionano anche senza rete.
+  - I dati restano SOLO sul telefono. Fai ogni tanto un backup da
+    Impostazioni (ingranaggio) > "Scarica il backup dei dati".
+    Se cancelli i dati del browser o disinstalli l'app, i dati non
+    salvati in un backup si perdono.
+
+Lettura degli scontrini con la foto
+  L'app installata legge le foto con Google Gemini (gratis):
+  1. Vai su https://aistudio.google.com/apikey e crea una chiave.
+  2. Nell'app: ingranaggio > "Chiave Gemini" > Salva > "Prova la chiave".
+  La chiave resta solo sul telefono e serve internet. Senza chiave puoi
+  inserire le spese a mano. Le foto vengono ridotte prima dell'invio e
+  quelle di una trasferta sono lette 3 alla volta.
+
+Aggiornare l'app
+  Sostituisci i file su Netlify. Per forzare l'aggiornamento sui telefoni
+  cambia il numero in sw.js (const CACHE = 'distinta-v10').
+
+Provarla sul computer prima di pubblicarla
+  Nella cartella: python3 -m http.server 8000   poi apri http://localhost:8000
